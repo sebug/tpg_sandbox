@@ -7,6 +7,7 @@ import Data.ByteString.Lazy
 import Control.Applicative
 import Control.Monad
 import Data.Aeson
+import TPG.Structured
 
 data Config = Config { api_key :: String }
 
@@ -24,5 +25,7 @@ main = do
     Nothing -> error "Did not find API key"
     Just Config { api_key = key } -> (do
                   results <- getStops key "Gardiol"
-                  System.IO.putStrLn results)
+                  case (parseStops results) of
+                    Nothing -> System.IO.putStrLn "Nothing"
+                    Just o -> System.IO.putStrLn (show o))
   hClose config_handle
