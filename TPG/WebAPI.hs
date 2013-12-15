@@ -23,9 +23,9 @@ getNextDepartures :: String -> String -> IO String
 getNextDepartures key =
   rb . (apiCall key "GetNextDepartures" `withArg` "stopCode")
 
-getAllNextDepartures :: String -> String -> IO String
-getAllNextDepartures key =
-  rb . (apiCall key "GetAllNextDepartures" `withArg` "stopCode")
+getAllNextDepartures :: String -> String -> String -> String -> IO String
+getAllNextDepartures key stopCode lineCode destinationCode =
+  rb ((((((apiCall key "GetAllNextDepartures" `withArg` "stopCode") stopCode) `withArg` "lineCode") lineCode) `withArg` "destinationCode") destinationCode)
 
 getThermometer :: String -> String -> IO String
 getThermometer key =

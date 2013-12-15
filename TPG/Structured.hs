@@ -67,8 +67,7 @@ data Departure = Departure {
   waitingTimeMillis :: Int,
   waitingTime :: String,
   line :: Connection,
-  reliability :: String,
-  characteristics :: String
+  reliability :: String
   } deriving (Show)
 
 instance FromJSON Departure where
@@ -79,15 +78,13 @@ instance FromJSON Departure where
     wt <- v .: "waitingTime"
     l <- parseJSON =<< (v .: "line")
     r <- v .: "reliability"
-    c <- v .: "characteristics"
     return Departure {
       departureCode = dc,
       timestampDeparture = ts,
       waitingTimeMillis = wtM,
       waitingTime = wt,
       line = l,
-      reliability = r,
-      characteristics = c
+      reliability = r
       }
   parseJSON _ = mzero
 
@@ -111,4 +108,5 @@ instance FromJSON NextDepartures where
 
 parseNextDepartures :: String -> Maybe NextDepartures
 parseNextDepartures = decode . Data.ByteString.Lazy.Char8.pack
+
 
