@@ -6,6 +6,7 @@ module TPG.Structured
 , Stop
 , Stops
 , parseStops
+, parseNextDepartures
 ) where
 
 import TPG.WebAPI
@@ -58,7 +59,56 @@ instance FromJSON Stops where
   parseJSON _ = mzero
 
 parseStops :: String -> Maybe Stops
-parseStops input = decode bsInput
-                   where bsInput = Data.ByteString.Lazy.Char8.pack input
+parseStops = decode . Data.ByteString.Lazy.Char8.pack
 
+data Departure = Departure {
+  departureCode :: Int,
+  timestampDeparture :: String,
+  waitingTimeMillis :: Int,
+  waitingTime :: String,
+  line :: Connection,
+  reliability :: String,
+  characteristics :: String
+  } deriving (Show)
+
+instance FromJSON Departure where
+  parseJSON (Object v) = do
+    dc <- v .: "departureCode"
+    ts <- v .: "timestamp"
+    wtM <- v .: "waitingTimeMillis"
+    wt <- v .: "waitingTime"
+    l <- parseJSON =<< (v .: "line")
+    r <- v .: "reliability"
+    c <- v .: "characteristics"
+    return Departure {
+      departureCode = dc,
+      timestampDeparture = ts,
+      waitingTimeMillis = wtM,
+      waitingTime = wt,
+      line = l,
+      reliability = r,
+      characteristics = c
+      }
+  parseJSON _ = mzero
+
+data NextDepartures = NextDepartures {
+  timestampNextDepartures :: String,
+  stop :: Stop,
+  departures :: [Departure]
+  } deriving (Show)
+
+instance FromJSON NextDepartures where
+  parseJSON (Object v) = do
+    ts <- v .: "timestamp"
+    st <- v .: "stop"
+    dpts <- parseJSON =<< (v .: "departures")
+    return NextDepartures {
+      timestampNextDepartures = ts,
+      stop = st,
+      departures = dpts
+      }
+  parseJSON _ = mzero
+
+parseNextDepartures :: String -> Maybe NextDepartures
+parseNextDepartures = decode . Data.ByteString.Lazy.Char8.pack
 

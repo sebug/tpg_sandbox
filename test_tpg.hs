@@ -17,8 +17,8 @@ main = do
   case key of
     Nothing -> error "Did not find API key"
     Just key -> (do
-                  results <- getStops key "Gardiol"
-                  case (parseStops results) of
+                  results <- getNextDepartures key "GIOL"
+                  case (parseNextDepartures results) of
                     Nothing -> System.IO.putStrLn "Nothing"
                     Just o -> System.IO.putStrLn (show o))
   hClose config_handle
