@@ -32,10 +32,13 @@ data Stops = Stops {
   stops :: [Stop]
   } deriving (Show)
 
+instance FromJSON Stops where
+  parseJSON (Object v) = do
+    ts <- v .: "timestamp"
+    return Stops { timestamp = ts, stops = [] }
+  parseJSON _ = mzero
+
 parseStops :: String -> Maybe Stops
-parseStops input = do result <- decode bsInput
-                      flip parseMaybe result $ \obj -> do
-                        ts <- obj .: "timestamp"
-                        return Stops { timestamp=ts, stops=[] }
+parseStops input = decode bsInput
                    where bsInput = Data.ByteString.Lazy.Char8.pack input
 
