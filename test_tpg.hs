@@ -17,8 +17,8 @@ main = do
   case key of
     Nothing -> error "Did not find API key"
     Just key -> (do
-                  results <- getAllNextDepartures key "GIOL" "3" "CHAMPEL"
-                  case (parseNextDepartures results) of
+                  results <- getThermometerPhysicalStops key "54120"
+                  case (parseThermometerPhysicalStops results) of
                     Nothing -> System.IO.putStrLn "Nothing"
-                    Just o -> System.IO.putStrLn (show o))
+                    Just o -> System.IO.putStrLn results)
   hClose config_handle

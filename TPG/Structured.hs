@@ -7,6 +7,8 @@ module TPG.Structured
 , Stops
 , parseStops
 , parseNextDepartures
+, parseThermometer
+, parseThermometerPhysicalStops
 ) where
 
 import TPG.WebAPI
@@ -44,7 +46,6 @@ instance FromJSON Stop where
     cnx <- parseJSON =<< (v .: "connections")
     return Stop { stopCode = stCode, stopName = stName, connections = cnx }
   parseJSON _ = mzero
-    
 
 data Stops = Stops {
   timestamp :: String,
@@ -109,4 +110,153 @@ instance FromJSON NextDepartures where
 parseNextDepartures :: String -> Maybe NextDepartures
 parseNextDepartures = decode . Data.ByteString.Lazy.Char8.pack
 
+data Step = Step {
+  departureCodeStep :: Int,
+  timestampStep :: String,
+  stopStep :: Stop,
+  deviation :: Bool,
+  reliabilityStep :: String,
+  visible :: Bool
+  } deriving (Show)
 
+instance FromJSON Step where
+  parseJSON (Object v) = do
+    dc <- v .: "departureCode"
+    ts <- v .: "timestamp"
+    st <- v .: "stop"
+    dev <- v .: "deviation"
+    rs <- v .: "reliability"
+    vs <- v .: "visible"
+    return Step {
+      departureCodeStep = dc,
+      timestampStep = ts,
+      stopStep = st,
+      deviation = dev,
+      reliabilityStep = rs,
+      visible = vs
+      }
+  parseJSON _ = mzero
+
+data Thermometer = Thermometer {
+  timestampThermometer :: String,
+  stopThermometer :: Stop,
+  lineCodeThermometer :: String,
+  destinationNameThermometer :: String,
+  destinationCodeThermometer :: String,
+  steps :: [Step]
+} deriving (Show)
+
+instance FromJSON Thermometer where
+  parseJSON (Object v) = do
+    ts <- v .: "timestamp"
+    st <- v .: "stop"
+    lc <- v .: "lineCode"
+    dn <- v .: "destinationName"
+    dc <- v .: "destinationCode"
+    sts <- parseJSON =<< (v .: "steps")
+    return Thermometer {
+      timestampThermometer = ts,
+      stopThermometer = st,
+      lineCodeThermometer = lc,
+      destinationNameThermometer = dn,
+      destinationCodeThermometer = dc,
+      steps = sts
+      }
+  parseJSON _ = mzero
+
+parseThermometer :: String -> Maybe Thermometer
+parseThermometer = decode . Data.ByteString.Lazy.Char8.pack
+
+data Coordinates = Coordinates {
+  longitude :: Float,
+  latitude :: Float,
+  referential :: String
+  } deriving (Show)
+
+instance FromJSON Coordinates where
+  parseJSON (Object v) = do
+    lat <- v .: "latitude"
+    long <- v .: "longitude"
+    r <- v .: "referential"
+    return Coordinates {
+      latitude = lat,
+      longitude = long,
+      referential = r
+      }
+  parseJSON _ = mzero
+
+data PhysicalStop = PhysicalStop {
+  physicalStopCode :: String,
+  stopNamePhysicalStop :: String,
+  connectionsPhysicalStop :: [Connection],
+  coordinates :: Coordinates
+  } deriving (Show)
+
+instance FromJSON PhysicalStop where
+  parseJSON (Object v) = do
+    stCode <- v .: "physicalStopCode"
+    stName <- v .: "stopName"
+    cnx <- parseJSON =<< (v .: "connections")
+    coords <- v .: "coordinates"
+    return PhysicalStop { physicalStopCode = stCode, stopNamePhysicalStop = stName, connectionsPhysicalStop = cnx, coordinates = coords }
+  parseJSON _ = mzero
+
+data PhysicalStep = PhysicalStep {
+  departureCodePS :: Int,
+  timestampPS :: String,
+  stopPS :: Stop,
+  physicalStopPS :: PhysicalStop,
+  deviationPS :: Bool,
+  reliabilityPS :: String,
+  visiblePS :: Bool
+  } deriving (Show)
+
+instance FromJSON PhysicalStep where
+  parseJSON (Object v) = do
+    dc <- v .: "departureCode"
+    ts <- v .: "timestamp"
+    st <- v .: "stop"
+    pst <- v .: "physicalStop"
+    dev <- v .: "deviation"
+    rs <- v .: "reliability"
+    vs <- v .: "visible"
+    return PhysicalStep {
+      departureCodePS = dc,
+      timestampPS = ts,
+      stopPS = st,
+      physicalStopPS = pst,
+      deviationPS = dev,
+      reliabilityPS = rs,
+      visiblePS = vs
+      }
+  parseJSON _ = mzero
+
+data ThermometerPhysicalStops = ThermometerPhysicalStops {
+  timestampThermometerPhysicalStops :: String,
+  stopThermometerPhysicalStops :: Stop,
+  lineCodeThermometerPhysicalStops :: String,
+  destinationNameThermometerPhysicalStops :: String,
+  destinationCodeThermometerPhysicalStops :: String,
+  stepsThermometerPhysicalStops :: [PhysicalStep]
+  } deriving (Show)
+
+instance FromJSON ThermometerPhysicalStops where
+  parseJSON (Object v) = do
+    ts <- v .: "timestamp"
+    st <- v .: "stop"
+    lc <- v .: "lineCode"
+    dn <- v .: "destinationName"
+    dc <- v .: "destinationCode"
+    sts <- parseJSON =<< (v .: "steps")
+    return ThermometerPhysicalStops {
+      timestampThermometerPhysicalStops = ts,
+      stopThermometerPhysicalStops = st,
+      lineCodeThermometerPhysicalStops = lc,
+      destinationNameThermometerPhysicalStops = dn,
+      destinationCodeThermometerPhysicalStops = dc,
+      stepsThermometerPhysicalStops = sts
+      }
+  parseJSON _ = mzero
+
+parseThermometerPhysicalStops :: String -> Maybe ThermometerPhysicalStops
+parseThermometerPhysicalStops = decode . Data.ByteString.Lazy.Char8.pack
