@@ -9,6 +9,8 @@ module TPG.Structured
 , parseNextDepartures
 , parseThermometer
 , parseThermometerPhysicalStops
+, parseLineColors
+, parseDisruptions
 ) where
 
 import TPG.WebAPI
@@ -260,3 +262,86 @@ instance FromJSON ThermometerPhysicalStops where
 
 parseThermometerPhysicalStops :: String -> Maybe ThermometerPhysicalStops
 parseThermometerPhysicalStops = decode . Data.ByteString.Lazy.Char8.pack
+
+data Color = Color {
+  lineCodeColor :: String,
+  hexa :: String
+  } deriving (Show)
+
+instance FromJSON Color where
+  parseJSON (Object v) = do
+    lc <- v .: "lineCode"
+    c <- v .: "hexa"
+    return Color {
+      lineCodeColor = lc,
+      hexa = c
+      }
+  parseJSON _ = mzero
+
+data LineColors = LineColors {
+  timestampLineColors :: String,
+  colors :: [Color]
+  } deriving (Show)
+
+instance FromJSON LineColors where
+  parseJSON (Object v) = do
+    ts <- v .: "timestamp"
+    cs <- parseJSON =<< (v .: "colors")
+    return LineColors {
+      timestampLineColors = ts,
+      colors = cs
+      }
+  parseJSON _ = mzero
+
+
+parseLineColors :: String -> Maybe LineColors
+parseLineColors = decode . Data.ByteString.Lazy.Char8.pack
+
+data Disruption = Disruption {
+  disruptionCode :: Int,
+  timestampDisruption :: String,
+  place :: String,
+  nature :: String,
+  consequence :: String,
+  lineCodeDisruption :: String,
+  stopNameDisruption :: String
+  } deriving (Show)
+
+instance FromJSON Disruption where
+  parseJSON (Object v) = do
+    dc <- v .: "disruptionCode"
+    ts <- v .: "timestamp"
+    p  <- v .: "place"
+    n  <- v .: "nature"
+    c  <- v .: "consequence"
+    lc <- v .: "lineCode"
+    sn <- v .: "stopName"
+    return Disruption {
+      disruptionCode = dc,
+      timestampDisruption = ts,
+      place = p,
+      nature = n,
+      consequence = c,
+      lineCodeDisruption = lc,
+      stopNameDisruption = sn
+      }
+  parseJSON _ = mzero
+
+data Disruptions = Disruptions {
+  timestampDisruptions :: String,
+  disruptions :: [Disruption]
+  } deriving (Show)
+
+instance FromJSON Disruptions where
+  parseJSON (Object v) = do
+    ts <- v .: "timestamp"
+    ds <- parseJSON =<< (v .: "disruptions")
+    return Disruptions {
+      timestampDisruptions = ts,
+      disruptions = ds
+      }
+  parseJSON _ = mzero
+
+
+parseDisruptions :: String -> Maybe Disruptions
+parseDisruptions = decode . Data.ByteString.Lazy.Char8.pack
