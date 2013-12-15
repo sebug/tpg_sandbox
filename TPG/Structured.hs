@@ -61,3 +61,4 @@ parseStops :: String -> Maybe Stops
 parseStops input = decode bsInput
                    where bsInput = Data.ByteString.Lazy.Char8.pack input
 
+
