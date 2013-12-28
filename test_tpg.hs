@@ -4,7 +4,7 @@ import Cfg
 import System.IO
 import System.Directory
 import Data.ByteString.Internal
-import Data.ByteString.Lazy
+import qualified Data.ByteString.Lazy as BS
 import Control.Applicative
 import Control.Monad
 import TPG.Structured
@@ -12,7 +12,7 @@ import TPG.Structured
 main = do
   home_directory <- getHomeDirectory
   config_handle <- openFile (home_directory ++ "/.tpg_tests") ReadMode
-  contents <- Data.ByteString.Lazy.hGetContents config_handle
+  contents <- BS.hGetContents config_handle
   let key = getApiKeyFromConfigString contents
   case key of
     Nothing -> error "Did not find API key"
