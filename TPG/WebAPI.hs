@@ -19,7 +19,7 @@ rb url = simpleHTTP (getRequest url) >>= getResponseBody
 
 getStops :: String -> String -> IO (Maybe Stops)
 getStops key stopCode =
-  rb ((apiCall key "GetStops" `withArg` "stopName") stopCode)
+  rb (apiCall key "GetStops" `withArg` "stopName" $ stopCode)
   >>= return . parseStops
 
 --getPhysicalStops :: String -> String -> IO String
@@ -28,12 +28,12 @@ getStops key stopCode =
 
 getNextDepartures :: String -> String -> IO (Maybe NextDepartures)
 getNextDepartures key stopCode =
-  rb ((apiCall key "GetNextDepartures" `withArg` "stopCode") stopCode)
+  rb (apiCall key "GetNextDepartures" `withArg` "stopCode" $ stopCode)
   >>= return . parseNextDepartures
 
 getAllNextDepartures :: String -> String -> String -> String -> IO (Maybe NextDepartures)
 getAllNextDepartures key stopCode lineCode destinationCode =
-  rb (((apiCall key "GetAllNextDepartures" `withArg` "stopCode" $ stopCode) `withArg` "lineCode" $ lineCode) `withArg` "destinationCode" $ destinationCode)
+  rb ((apiCall key "GetAllNextDepartures" `withArg` "stopCode" `andArg` "lineCode" `andArg2` "destinationCode") stopCode lineCode destinationCode)
   >>= return . parseNextDepartures
 
 getThermometer :: String -> String -> IO (Maybe Thermometer)
