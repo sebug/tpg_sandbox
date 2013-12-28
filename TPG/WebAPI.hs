@@ -13,14 +13,14 @@ getStops
 import TPG.WebAPI.Bases
 import Network.HTTP
 import TPG.Structured
+import Control.Monad
 
 rb :: String -> IO String
 rb url = simpleHTTP (getRequest url) >>= getResponseBody
 
 getStops :: String -> String -> IO (Maybe Stops)
 getStops key stopCode =
-  rb (apiCall key "GetStops" `withArg` "stopName" $ stopCode)
-  >>= return . parseStops
+  liftM parseStops $ rb $ apiCall key "GetStops" `withArg` "stopName" $ stopCode
 
 --getPhysicalStops :: String -> String -> IO String
 --getPhysicalStops key =
@@ -28,29 +28,26 @@ getStops key stopCode =
 
 getNextDepartures :: String -> String -> IO (Maybe NextDepartures)
 getNextDepartures key stopCode =
-  rb (apiCall key "GetNextDepartures" `withArg` "stopCode" $ stopCode)
-  >>= return . parseNextDepartures
+  liftM parseNextDepartures $ rb $ apiCall key "GetNextDepartures" `withArg` "stopCode" $ stopCode
 
 getAllNextDepartures :: String -> String -> String -> String -> IO (Maybe NextDepartures)
 getAllNextDepartures key stopCode lineCode destinationCode =
-  rb ((apiCall key "GetAllNextDepartures" `withArg` "stopCode" `andArg` "lineCode" `andArg2` "destinationCode") stopCode lineCode destinationCode)
-  >>= return . parseNextDepartures
+  liftM parseNextDepartures $ rb $ (apiCall key "GetAllNextDepartures" `withArg` "stopCode" `andArg` "lineCode" `andArg2` "destinationCode") stopCode lineCode destinationCode
 
 getThermometer :: String -> String -> IO (Maybe Thermometer)
 getThermometer key departureCode =
-  rb (apiCall key "GetThermometer" `withArg` "departureCode" $ departureCode)
-  >>= return . parseThermometer
+  liftM parseThermometer $ rb $ apiCall key "GetThermometer" `withArg` "departureCode" $ departureCode
 
 getThermometerPhysicalStops :: String -> String -> IO (Maybe ThermometerPhysicalStops)
 getThermometerPhysicalStops key departureCode =
-  rb (apiCall key "GetThermometerPhysicalStops" `withArg` "departureCode" $ departureCode) >>= return . parseThermometerPhysicalStops
+  liftM parseThermometerPhysicalStops $ rb $ apiCall key "GetThermometerPhysicalStops" `withArg` "departureCode" $ departureCode
 
 getLinesColors :: String -> IO (Maybe LineColors)
 getLinesColors key =
-  rb (apiCall key "GetLinesColors") >>= return . parseLineColors
+  liftM parseLineColors $ rb $ apiCall key "GetLinesColors"
 
 getDisruptions :: String -> IO (Maybe Disruptions)
 getDisruptions key =
-  rb (apiCall key "GetDisruptions") >>= return . parseDisruptions
+  liftM parseDisruptions $ rb $ apiCall key "GetDisruptions"
 
 
