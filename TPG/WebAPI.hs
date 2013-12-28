@@ -31,22 +31,28 @@ getNextDepartures key stopCode = do
   text <- rb ((apiCall key "GetNextDepartures" `withArg` "stopCode") stopCode)
   return (parseNextDepartures text)
 
-getAllNextDepartures :: String -> String -> String -> String -> IO String
-getAllNextDepartures key stopCode lineCode destinationCode =
-  rb (((apiCall key "GetAllNextDepartures" `withArg` "stopCode" $ stopCode) `withArg` "lineCode" $ lineCode) `withArg` "destinationCode" $ destinationCode)
+getAllNextDepartures :: String -> String -> String -> String -> IO (Maybe NextDepartures)
+getAllNextDepartures key stopCode lineCode destinationCode = do
+  text <- rb (((apiCall key "GetAllNextDepartures" `withArg` "stopCode" $ stopCode) `withArg` "lineCode" $ lineCode) `withArg` "destinationCode" $ destinationCode)
+  return (parseNextDepartures text)
 
-getThermometer :: String -> String -> IO String
-getThermometer key =
-  rb . (apiCall key "GetThermometer" `withArg` "departureCode")
+getThermometer :: String -> String -> IO (Maybe Thermometer)
+getThermometer key departureCode = do
+  text <- rb (apiCall key "GetThermometer" `withArg` "departureCode" $ departureCode)
+  return (parseThermometer text)
 
-getThermometerPhysicalStops :: String -> String -> IO String
-getThermometerPhysicalStops key =
-  rb . (apiCall key "GetThermometerPhysicalStops" `withArg` "departureCode")
+getThermometerPhysicalStops :: String -> String -> IO (Maybe ThermometerPhysicalStops)
+getThermometerPhysicalStops key departureCode = do
+  text <- rb (apiCall key "GetThermometerPhysicalStops" `withArg` "departureCode" $ departureCode)
+  return (parseThermometerPhysicalStops text)
 
-getLinesColors :: String -> IO String
-getLinesColors key =
-  rb (apiCall key "GetLinesColors")
+getLinesColors :: String -> IO (Maybe LineColors)
+getLinesColors key = do
+  text <- rb (apiCall key "GetLinesColors")
+  return (parseLineColors text)
 
-getDisruptions :: String -> IO String
-getDisruptions key =
-  rb (apiCall key "GetDisruptions")
+getDisruptions :: String -> IO (Maybe Disruptions)
+getDisruptions key = do
+  text <- rb (apiCall key "GetDisruptions")
+  return (parseDisruptions text)
+

@@ -6,6 +6,10 @@ module TPG.Structured
 , Stop
 , Stops
 , NextDepartures
+, Thermometer
+, ThermometerPhysicalStops
+, LineColors
+, Disruptions
 , parseStops
 , parseNextDepartures
 , parseThermometer
