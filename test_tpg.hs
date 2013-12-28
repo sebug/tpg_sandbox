@@ -63,8 +63,8 @@ main = do
   args <- getArgs
   case args of
     [] -> do
-      putStrLn "Please provide one of the following commands as parameter:"
-      putStrLn $ foldl (++) "" $ map (\p -> (fst p) ++ "\n") dispatch
+      putStr "Please provide one of the following commands as parameter:"
+      putStrLn $ foldl (++) "" $ map (\p -> "\n" ++ (fst p)) dispatch
     (command:rest) -> do
       home_directory <- getHomeDirectory
       config_handle <- openFile (home_directory ++ "/.tpg_tests") ReadMode
