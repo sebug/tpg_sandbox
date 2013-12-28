@@ -5,6 +5,7 @@ module TPG.Structured
 ( Connection
 , Stop
 , Stops
+, NextDepartures
 , parseStops
 , parseNextDepartures
 , parseThermometer
@@ -13,7 +14,6 @@ module TPG.Structured
 , parseDisruptions
 ) where
 
-import TPG.WebAPI
 import Control.Applicative
 import Control.Monad
 import Data.Aeson

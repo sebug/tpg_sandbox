@@ -1,6 +1,7 @@
 module TPG.WebAPI
 (
 getStops
+--, getPhysicalStops
 , getNextDepartures
 , getAllNextDepartures
 , getThermometer
@@ -11,21 +12,28 @@ getStops
 
 import TPG.WebAPI.Bases
 import Network.HTTP
+import TPG.Structured
 
 rb :: String -> IO String
 rb url = simpleHTTP (getRequest url) >>= getResponseBody
 
-getStops :: String -> String -> IO String
-getStops key =
-  rb . (apiCall key "GetStops" `withArg` "stopName")
+getStops :: String -> String -> IO (Maybe Stops)
+getStops key stopCode = do
+  text <- rb ((apiCall key "GetStops" `withArg` "stopName") stopCode)
+  return (parseStops text)
 
-getNextDepartures :: String -> String -> IO String
-getNextDepartures key =
-  rb . (apiCall key "GetNextDepartures" `withArg` "stopCode")
+--getPhysicalStops :: String -> String -> IO String
+--getPhysicalStops key =
+--  rb . (apiCall key "GetPhysicalStops" `withArg` "stopCode")
+
+getNextDepartures :: String -> String -> IO (Maybe NextDepartures)
+getNextDepartures key stopCode = do
+  text <- rb ((apiCall key "GetNextDepartures" `withArg` "stopCode") stopCode)
+  return (parseNextDepartures text)
 
 getAllNextDepartures :: String -> String -> String -> String -> IO String
 getAllNextDepartures key stopCode lineCode destinationCode =
-  rb ((((((apiCall key "GetAllNextDepartures" `withArg` "stopCode") stopCode) `withArg` "lineCode") lineCode) `withArg` "destinationCode") destinationCode)
+  rb (((apiCall key "GetAllNextDepartures" `withArg` "stopCode" $ stopCode) `withArg` "lineCode" $ lineCode) `withArg` "destinationCode" $ destinationCode)
 
 getThermometer :: String -> String -> IO String
 getThermometer key =

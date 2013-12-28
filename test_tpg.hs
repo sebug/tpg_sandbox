@@ -17,8 +17,8 @@ main = do
   case key of
     Nothing -> error "Did not find API key"
     Just key -> (do
-                  results <- getDisruptions key
-                  case (parseDisruptions results) of
+                  r <- getStops key "Gardiol"
+                  case r of
                     Nothing -> System.IO.putStrLn "Nothing"
                     Just o -> System.IO.putStrLn (show o))
   hClose config_handle
