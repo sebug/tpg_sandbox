@@ -16,6 +16,7 @@ module TPG.Structured
 , parseThermometerPhysicalStops
 , parseLineColors
 , parseDisruptions
+, stopCodeList
 ) where
 
 import Control.Applicative
@@ -67,6 +68,9 @@ instance FromJSON Stops where
 
 parseStops :: String -> Maybe Stops
 parseStops = decode . Data.ByteString.Lazy.Char8.pack
+
+stopCodeList :: Stops -> [String]
+stopCodeList sts = Prelude.map stopCode $ stops sts
 
 data Departure = Departure {
   departureCode :: Int,
