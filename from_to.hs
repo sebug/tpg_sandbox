@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+import TPG.WebAPI
 import System.Directory
 import System.Environment
 import System.IO
@@ -19,6 +20,9 @@ main = do
       case key of
         Nothing -> error "Did not find API key"
         Just key -> (do
-                        putStrLn key)
+                        fromStop <- getStops key $ head args
+                        toStop <- getStops key $ head $ tail args
+                        putStrLn (show fromStop)
+                        putStrLn (show toStop))
       hClose config_handle
 
