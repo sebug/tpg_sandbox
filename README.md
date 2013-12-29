@@ -8,7 +8,9 @@ You will have to obtain a key (link "Demander une clé") and store it under "~/.
 
 replacing of course with your own Guid.
 
-The code relies on the following packages (I haven't learned about proper packaging yet, so just cabal install ahead):
+As the executable names are still a bit messy, I suggest you just use
 
-- HTTP
-- aeson
+cabal build
+
+and install only when it is a bit clearer how we should call them.
+
