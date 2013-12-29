@@ -7,6 +7,11 @@ import System.IO
 import qualified Data.ByteString.Lazy as BS
 import Cfg
 
+--getDepartureList :: String -> [String] -> IO [Departure]
+--getDepartureList key stopCodes = do
+--  let departures = foldl join $ map (getNextDepartures key) stopCodes
+--  departures
+
 calculate_route :: String -> String -> String -> IO ()
 calculate_route key fromStopName toStopName = do
   mFromStop <- getStops key fromStopName
