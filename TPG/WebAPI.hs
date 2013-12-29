@@ -36,7 +36,7 @@ getAllNextDepartures key stopCode lineCode destinationCode =
 
 getThermometer :: String -> String -> IO (Maybe Thermometer)
 getThermometer key departureCode =
-  liftM parseThermometer $ rb $ apiCall key "GetThermometer" `withArg` "departureCode" $ departureCode
+  liftM parseThermometer (rb $ apiCall key "GetThermometer" `withArg` "departureCode" $ departureCode)
 
 getThermometerPhysicalStops :: String -> String -> IO (Maybe ThermometerPhysicalStops)
 getThermometerPhysicalStops key departureCode =
