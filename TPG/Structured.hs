@@ -18,7 +18,7 @@ module TPG.Structured
 , parseLineColors
 , parseDisruptions
 , stopCodeList
-, departureList
+, departures
 ) where
 
 import Control.Applicative
@@ -121,9 +121,6 @@ instance FromJSON NextDepartures where
 
 parseNextDepartures :: String -> Maybe NextDepartures
 parseNextDepartures = decode . Data.ByteString.Lazy.Char8.pack
-
-departureList :: NextDepartures -> [Departure]
-departureList = departures
 
 data Step = Step {
   departureCodeStep :: Int,

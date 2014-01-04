@@ -16,7 +16,7 @@ getDepartureList key stopCodes = do
   let successfulNexts = rights thisNextDepartures
   let ndList nd = case nd of
         Nothing -> []
-        Just dpts -> (departureList dpts)
+        Just dpts -> (departures dpts)
   let mapped = map ndList successfulNexts
   return (join mapped)
 
