@@ -7,10 +7,15 @@ import System.IO
 import qualified Data.ByteString.Lazy as BS
 import Cfg
 
---getDepartureList :: String -> [String] -> IO [Departure]
---getDepartureList key stopCodes = do
---  let departures = foldl join $ map (getNextDepartures key) stopCodes
---  departures
+getDepartureList :: String -> [String] -> IO [Departure]
+getDepartureList key [] = return []
+getDepartureList key (stopCode:scs) = do
+  thisNextDepartures <- getNextDepartures key stopCode
+  let ndList = case thisNextDepartures of
+        Nothing -> []
+        Just dpts -> (departureList dpts)
+  otherNextDepartures <- getDepartureList key scs
+  return (ndList ++ otherNextDepartures)
 
 calculate_route :: String -> String -> String -> IO ()
 calculate_route key fromStopName toStopName = do
@@ -19,6 +24,8 @@ calculate_route key fromStopName toStopName = do
   case (mFromStop,mToStop) of
     (Just fromStop, Just toStop) -> do
       putStrLn (show (stopCodeList fromStop))
+      dList <- getDepartureList key (stopCodeList fromStop)
+      putStrLn (show dList)
       putStrLn (show (stopCodeList toStop))
     _ -> putStrLn "Could not match from/to"
 
