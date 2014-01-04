@@ -10,13 +10,15 @@ import Control.Monad
 import Control.Monad.Loops
 import Data.Either
 
-getDepartureList :: String -> [String] -> IO [Departure]
-getDepartureList key stopCodes = do
-  thisNextDepartures <- forkMapM (getNextDepartures key) stopCodes
+getDepartureList :: String -> [([String],[Thermometer])] -> IO [Departure]
+getDepartureList key stopCodesPaired = do
+  thisNextDepartures <- forkMapM (\p -> do
+                                     nd <- getNextDepartures key ((head . fst) p)
+                                     return (nd, fst p, snd p)) stopCodesPaired
   let successfulNexts = rights thisNextDepartures
   let ndList nd = case nd of
-        Nothing -> []
-        Just dpts -> (departures dpts)
+        (Nothing,_,_) -> []
+        (Just dpts,_,_) -> (departures dpts)
   let mapped = map ndList successfulNexts
   return (join mapped)
 
@@ -30,18 +32,16 @@ getThermometerList key departureCodes = do
   let mapped = map tList successfulThermometers
   return (join mapped)
 
-calculate_route :: String -> [String] -> [String] -> Int -> IO ()
+calculate_route :: String -> [([String],[Thermometer])] -> [String] -> Int -> IO [([String],[Thermometer])]
 calculate_route key fromStopCodeList toStopCodeList maxIter = do
-  putStrLn (show fromStopCodeList)
   dList <- getDepartureList key fromStopCodeList
   let departureCodes = map (show . departureCode) dList
   putStrLn (show departureCodes)
   thermometers <- getThermometerList key departureCodes
   let rds = map reachableDestinationCodes thermometers
   let destinationIntersections =
-        [ (tdc,th) | p <- rds, (tdc,th) <- p, dc <- toStopCodeList, dc == tdc]
-  putStrLn (show destinationIntersections)
-  putStrLn (show toStopCodeList)
+        [ ([tdc],[th]) | p <- rds, (tdc,th) <- p, dc <- toStopCodeList, dc == tdc]
+  return destinationIntersections
 
 calculate_route_with_names :: String -> String -> String -> IO ()
 calculate_route_with_names key fromStopName toStopName = do
@@ -50,8 +50,12 @@ calculate_route_with_names key fromStopName toStopName = do
   case (mFromStop,mToStop) of
     (Just fromStop,Just toStop) -> do
       let fromStopCodeList = stopCodeList fromStop
+      let fromStopCodesPaired = map (\sc -> ([sc],[])) fromStopCodeList
       let toStopCodeList = stopCodeList toStop
-      calculate_route key fromStopCodeList toStopCodeList 5 -- max 5 changes
+      putStrLn (show fromStopCodeList)
+      routes <- calculate_route key fromStopCodesPaired toStopCodeList 5 -- max 5 changes
+      putStrLn (show routes)
+      putStrLn (show toStopCodeList)
     _ -> putStrLn "Could not match from/to"
 
 main = do
