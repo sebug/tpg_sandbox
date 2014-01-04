@@ -6,16 +6,19 @@ import System.Environment
 import System.IO
 import qualified Data.ByteString.Lazy as BS
 import Cfg
+import Control.Monad
+import Control.Monad.Loops
+import Data.Either
 
 getDepartureList :: String -> [String] -> IO [Departure]
-getDepartureList key [] = return []
-getDepartureList key (stopCode:scs) = do
-  thisNextDepartures <- getNextDepartures key stopCode
-  let ndList = case thisNextDepartures of
+getDepartureList key stopCodes = do
+  thisNextDepartures <- forkMapM (getNextDepartures key) stopCodes
+  let successfulNexts = rights thisNextDepartures
+  let ndList nd = case nd of
         Nothing -> []
         Just dpts -> (departureList dpts)
-  otherNextDepartures <- getDepartureList key scs
-  return (ndList ++ otherNextDepartures)
+  let mapped = map ndList successfulNexts
+  return (join mapped)
 
 calculate_route :: String -> String -> String -> IO ()
 calculate_route key fromStopName toStopName = do
