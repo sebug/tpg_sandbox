@@ -19,6 +19,9 @@ module TPG.Structured
 , parseDisruptions
 , stopCodeList
 , departures
+, departureCode
+, steps
+, reachableDestinationCodes
 ) where
 
 import Control.Applicative
@@ -178,6 +181,9 @@ instance FromJSON Thermometer where
 
 parseThermometer :: String -> Maybe Thermometer
 parseThermometer = decode . Data.ByteString.Lazy.Char8.pack
+
+reachableDestinationCodes :: Thermometer -> [(String,Thermometer)]
+reachableDestinationCodes th = (Prelude.map (\st -> (stopCode (stopStep st), th)) . steps) th
 
 data Coordinates = Coordinates {
   longitude :: Float,
