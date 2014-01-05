@@ -22,6 +22,11 @@ module TPG.Structured
 , departureCode
 , steps
 , reachableDestinationCodes
+, stopThermometer
+, isChangeStop
+, lineCodeThermometer
+, stopStep
+, stopCode
 ) where
 
 import Control.Applicative
@@ -76,6 +81,10 @@ parseStops = decode . Data.ByteString.Lazy.Char8.pack
 
 stopCodeList :: Stops -> [String]
 stopCodeList sts = Prelude.map stopCode $ stops sts
+
+isChangeStop :: String -> Stop -> Bool
+isChangeStop currentLineCode =
+  (Prelude.any (not . ((==) currentLineCode) . lineCode)) . connections
 
 data Departure = Departure {
   departureCode :: Int,

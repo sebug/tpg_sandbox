@@ -38,6 +38,29 @@ getThermometerList key departures = do
   thisFullResultThermometers <- forkMapM (wrapGetThermometer key) departures
   return (filter nonEmptyPair $ rights thisFullResultThermometers)
 
+-- Prepends a next possible stop to the current route
+-- the stop is only possible if it leads to another line
+performStopStep :: [([String],[Thermometer])] -> [([String],[Thermometer])]
+performStopStep routes = performStep routes isChangeStop
+
+-- Given the current routes, filter out those that end in one of the given
+-- destinations
+intersectWithDestinationCodes :: [([String],[Thermometer])] -> [String] -> [([String],[Thermometer])]
+intersectWithDestinationCodes routes destinationCodes =
+  performStep routes (\_ -> stopMatchesDestinations destinationCodes)
+
+stopMatchesDestinations :: [String] -> Stop -> Bool
+stopMatchesDestinations destinations stop = any (\c -> stopCode stop == c) destinations
+  
+performStep :: [([String],[Thermometer])] -> (String -> Stop -> Bool) -> [([String],[Thermometer])]
+performStep pairs filterGen =
+  join $ map (\q ->
+               case q of
+                 (sts,ts) ->
+                   let t = head ts in
+                   let currentLineCode = lineCodeThermometer t in
+                   map (\st -> ((stopCode st):sts,ts)) $ filter (filterGen currentLineCode) $ map stopStep $ steps $ t) pairs
+
 calculate_route :: String -> [([String],[Thermometer])] -> [String] -> Int -> IO [([String],[Thermometer])]
 calculate_route key fromStopCodeList toStopCodeList maxIter = do
   dList <- getDepartureList key fromStopCodeList
@@ -46,14 +69,9 @@ calculate_route key fromStopCodeList toStopCodeList maxIter = do
   let departureCodes = map (show . departureCode) extractedDestinations
   putStrLn (show departureCodes)
   thermometers <- getThermometerList key dList
-  let step = map (\p ->
-                   let reachableCodes = reachableDestinationCodes (head $ snd p) in
-                   map (\rc -> (rc:(fst p),snd p)) reachableCodes) thermometers
-  putStrLn (show (map (map fst) step))
---  let rds = map reachableDestinationCodes thermometers
---  let destinationIntersections =
---        [ ([tdc],[th]) | p <- rds, (tdc,th) <- p, dc <- toStopCodeList, dc == tdc]
-  return []
+  let nextStep = performStopStep thermometers
+  putStrLn (show $ map fst nextStep)
+  return (intersectWithDestinationCodes thermometers toStopCodeList)
 
 calculate_route_with_names :: String -> String -> String -> IO ()
 calculate_route_with_names key fromStopName toStopName = do
@@ -66,7 +84,7 @@ calculate_route_with_names key fromStopName toStopName = do
       let toStopCodeList = stopCodeList toStop
       putStrLn (show fromStopCodeList)
       routes <- calculate_route key fromStopCodesPaired toStopCodeList 5 -- max 5 changes
-      putStrLn (show routes)
+      putStrLn (show (map fst routes))
       putStrLn (show toStopCodeList)
     _ -> putStrLn "Could not match from/to"
 
