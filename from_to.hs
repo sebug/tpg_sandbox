@@ -22,22 +22,21 @@ getDepartureList key stopCodesPaired = do
   let mapped = map ndList successfulNexts
   return (join mapped)
 
-getThermometerList :: String -> [(Departure,[String],[Thermometer])] -> IO [Thermometer]
+nonEmptyPair :: ([a],[b]) -> Bool
+nonEmptyPair ([],[]) = False
+nonEmptyPair _ = True
+
+wrapGetThermometer :: String -> (Departure,[String],[Thermometer]) -> IO ([String],[Thermometer])
+wrapGetThermometer key (d,sts,prevThermometers) = do
+  tres <- getThermometer key (show $ departureCode d)
+  case tres of
+    Nothing -> return ([],[])
+    Just tres -> return (sts,tres:prevThermometers)
+
+getThermometerList :: String -> [(Departure,[String],[Thermometer])] -> IO [([String],[Thermometer])]
 getThermometerList key departures = do
-  thisFullResultThermometers <-
-    forkMapM (\t -> case t of
-                 (d,sts,prevTs) -> do
-                            tres <- getThermometer key (show $ departureCode d)
-                            case tres of
-                              Nothing -> return ([],[])
-                              Just tres -> return (sts,tres:prevTs)
-             ) departures
-  let successfulThermometers = map (Just . head . snd) (rights thisFullResultThermometers)
-  let tList t = case t of
-        Nothing -> []
-        Just therm -> [therm]
-  let mapped = map tList successfulThermometers
-  return (join mapped)
+  thisFullResultThermometers <- forkMapM (wrapGetThermometer key) departures
+  return (filter nonEmptyPair $ rights thisFullResultThermometers)
 
 calculate_route :: String -> [([String],[Thermometer])] -> [String] -> Int -> IO [([String],[Thermometer])]
 calculate_route key fromStopCodeList toStopCodeList maxIter = do
@@ -47,10 +46,11 @@ calculate_route key fromStopCodeList toStopCodeList maxIter = do
   let departureCodes = map (show . departureCode) extractedDestinations
   putStrLn (show departureCodes)
   thermometers <- getThermometerList key dList
-  let rds = map reachableDestinationCodes thermometers
-  let destinationIntersections =
-        [ ([tdc],[th]) | p <- rds, (tdc,th) <- p, dc <- toStopCodeList, dc == tdc]
-  return destinationIntersections
+  putStrLn (show thermometers)
+--  let rds = map reachableDestinationCodes thermometers
+--  let destinationIntersections =
+--        [ ([tdc],[th]) | p <- rds, (tdc,th) <- p, dc <- toStopCodeList, dc == tdc]
+  return []
 
 calculate_route_with_names :: String -> String -> String -> IO ()
 calculate_route_with_names key fromStopName toStopName = do
