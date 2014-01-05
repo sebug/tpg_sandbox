@@ -46,7 +46,10 @@ calculate_route key fromStopCodeList toStopCodeList maxIter = do
   let departureCodes = map (show . departureCode) extractedDestinations
   putStrLn (show departureCodes)
   thermometers <- getThermometerList key dList
-  putStrLn (show thermometers)
+  let step = map (\p ->
+                   let reachableCodes = reachableDestinationCodes (head $ snd p) in
+                   map (\rc -> (rc:(fst p),snd p)) reachableCodes) thermometers
+  putStrLn (show (map (map fst) step))
 --  let rds = map reachableDestinationCodes thermometers
 --  let destinationIntersections =
 --        [ ([tdc],[th]) | p <- rds, (tdc,th) <- p, dc <- toStopCodeList, dc == tdc]
